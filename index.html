@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cupid">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLAMES - The Ultimate Couple's Destiny Game 🔥💖</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background Canvas for Confetti & Particle Effects -->
+  <canvas id="particleCanvas"></canvas>
+
+  <div class="app-wrapper">
+    <!-- Navbar / Header -->
+    <header class="app-header">
+      <div class="logo-group">
+        <div class="flame-icon-badge">
+          <span class="flame-emoji">🔥</span>
+          <span class="sparkle-emoji">✨</span>
+        </div>
+        <div class="logo-text">
+          <h1>F.L.A.M.E.S</h1>
+          <span class="tagline">Couples Destiny & Relationship Predictor</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Audio Toggle -->
+        <button id="audioToggleBtn" class="pill-btn sound-btn" title="Toggle Sound FX" aria-label="Toggle Sound">
+          <span class="sound-icon">🔊</span>
+          <span class="sound-text">Sound: ON</span>
+        </button>
+
+        <!-- Theme Selector -->
+        <div class="theme-picker-container">
+          <button id="themePickerBtn" class="pill-btn theme-btn" title="Change Visual Theme">
+            <span id="currentThemeIcon">💖</span>
+            <span id="currentThemeLabel">Cupid's Glow</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="theme-dropdown hidden" id="themeDropdown">
+            <button class="theme-option active" data-theme="cupid">
+              <span class="theme-dot cupid-dot"></span>
+              <span>💖 Cupid's Glow</span>
+            </button>
+            <button class="theme-option" data-theme="notebook">
+              <span class="theme-dot notebook-dot"></span>
+              <span>📜 90s School Notebook</span>
+            </button>
+            <button class="theme-option" data-theme="midnight">
+              <span class="theme-dot midnight-dot"></span>
+              <span>🌌 Midnight Galaxy</span>
+            </button>
+            <button class="theme-option" data-theme="candypop">
+              <span class="theme-dot candypop-dot"></span>
+              <span>🍭 Candy Pop</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+
+      <!-- HERO INPUT SECTION -->
+      <section class="card input-card glass-panel" id="inputSection">
+        <div class="card-glow-bg"></div>
+        <div class="card-header text-center">
+          <span class="badge hero-badge">💕 Find Out Your True Connection</span>
+          <h2>Who Are The Two Lovers?</h2>
+          <p class="subtitle">Enter your names below to ignite the classic relationship oracle.</p>
+        </div>
+
+        <form id="flamesForm" class="names-form" onsubmit="return false;">
+          <div class="couple-inputs-grid">
+            <!-- Person 1 -->
+            <div class="person-input-card" id="person1Card">
+              <div class="avatar-wrapper">
+                <button type="button" class="avatar-select-btn" id="avatar1Btn" title="Choose Avatar">
+                  <span id="avatar1Icon">👑</span>
+                </button>
+                <div class="avatar-picker hidden" id="avatarPicker1">
+                  <span class="avatar-opt">👑</span><span class="avatar-opt">🤴</span><span class="avatar-opt">👨‍🦱</span>
+                  <span class="avatar-opt">🦁</span><span class="avatar-opt">🐱</span><span class="avatar-opt">🐻</span>
+                  <span class="avatar-opt">🌹</span><span class="avatar-opt">⚡</span><span class="avatar-opt">🎸</span>
+                </div>
+              </div>
+              <div class="input-field-group">
+                <label for="name1Input">Person 1 (Your Name)</label>
+                <input type="text" id="name1Input" placeholder="e.g. Romeo, Jack, Jim" maxlength="30" autocomplete="off" required>
+              </div>
+            </div>
+
+            <!-- Heart Link Divider -->
+            <div class="heart-divider">
+              <div class="heart-pulse-box">
+                <span class="pulsing-heart">❤️</span>
+                <span class="heart-text">&amp;</span>
+              </div>
+            </div>
+
+            <!-- Person 2 -->
+            <div class="person-input-card" id="person2Card">
+              <div class="avatar-wrapper">
+                <button type="button" class="avatar-select-btn" id="avatar2Btn" title="Choose Avatar">
+                  <span id="avatar2Icon">👸</span>
+                </button>
+                <div class="avatar-picker hidden" id="avatarPicker2">
+                  <span class="avatar-opt">👸</span><span class="avatar-opt">👩‍🦰</span><span class="avatar-opt">🧚‍♀️</span>
+                  <span class="avatar-opt">🦊</span><span class="avatar-opt">🐰</span><span class="avatar-opt">🐼</span>
+                  <span class="avatar-opt">🌸</span><span class="avatar-opt">✨</span><span class="avatar-opt">🎨</span>
+                </div>
+              </div>
+              <div class="input-field-group">
+                <label for="name2Input">Person 2 (Crush / Partner)</label>
+                <input type="text" id="name2Input" placeholder="e.g. Juliet, Rose, Pam" maxlength="30" autocomplete="off" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="presets-row">
+            <span class="presets-label">⚡ Fun Presets:</span>
+            <button type="button" class="preset-chip" data-n1="Romeo" data-n2="Juliet">Romeo &amp; Juliet</button>
+            <button type="button" class="preset-chip" data-n1="Jack" data-n2="Rose">Jack &amp; Rose</button>
+            <button type="button" class="preset-chip" data-n1="Jim" data-n2="Pam">Jim &amp; Pam</button>
+            <button type="button" class="preset-chip" data-n1="Barbie" data-n2="Ken">Barbie &amp; Ken</button>
+            <button type="button" class="preset-chip" data-n1="Shrek" data-n2="Fiona">Shrek &amp; Fiona</button>
+          </div>
+
+          <!-- Mode Selection & CTA -->
+          <div class="form-footer">
+            <div class="mode-toggle-group">
+              <label class="mode-radio">
+                <input type="radio" name="playMode" value="animated" checked>
+                <span class="radio-custom"></span>
+                <span class="mode-label">
+                  <strong>🎬 Step-by-Step Story</strong>
+                  <small>Animated letter cross-out &amp; FLAMES wheel</small>
+                </span>
+              </label>
+              <label class="mode-radio">
+                <input type="radio" name="playMode" value="instant">
+                <span class="radio-custom"></span>
+                <span class="mode-label">
+                  <strong>⚡ Instant Magic</strong>
+                  <small>Direct reveal with instant fireworks</small>
+                </span>
+              </label>
+            </div>
+
+            <button type="submit" id="calculateBtn" class="primary-btn glow-btn">
+              <span class="btn-sparkle">✨</span>
+              <span class="btn-text">Test Our Destiny!</span>
+              <span class="btn-fire">🔥</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ANIMATED STEP-BY-STEP STAGE SECTION -->
+      <section class="card stage-card glass-panel hidden" id="stageSection">
+        <!-- Stage Progress Indicator -->
+        <div class="stage-stepper">
+          <div class="step-node active" id="stepNode1">
+            <div class="node-circle">1</div>
+            <span class="node-text">Names</span>
+          </div>
+          <div class="step-line" id="stepLine1"></div>
+          <div class="step-node" id="stepNode2">
+            <div class="node-circle">2</div>
+            <span class="node-text">Strike Pairs</span>
+          </div>
+          <div class="step-line" id="stepLine2"></div>
+          <div class="step-node" id="stepNode3">
+            <div class="node-circle">3</div>
+            <span class="node-text">Count (N)</span>
+          </div>
+          <div class="step-line" id="stepLine3"></div>
+          <div class="step-node" id="stepNode4">
+            <div class="node-circle">4</div>
+            <span class="node-text">FLAMES Cycle</span>
+          </div>
+          <div class="step-line" id="stepLine4"></div>
+          <div class="step-node" id="stepNode5">
+            <div class="node-circle">5</div>
+            <span class="node-text">Destiny</span>
+          </div>
+        </div>
+
+        <!-- Stage Live Commentary / Narration Box -->
+        <div class="narration-box" id="narrationBox">
+          <span class="narration-icon" id="narrationIcon">✍️</span>
+          <div class="narration-content">
+            <h4 id="narrationTitle">Writing down both names...</h4>
+            <p id="narrationDesc">Preparing the love ledger to strike out matching letters.</p>
+          </div>
+        </div>
+
+        <!-- Letter Cross-Out Arena (Phase 1 to 3) -->
+        <div class="letter-cross-arena" id="letterCrossArena">
+          <!-- Person 1 Tiles -->
+          <div class="name-tile-row" id="row1">
+            <div class="row-header">
+              <span class="row-avatar" id="stageAvatar1">👑</span>
+              <span class="row-name" id="stageName1">Romeo</span>
+              <span class="row-badge" id="stageRemCount1">0 remaining</span>
+            </div>
+            <div class="tiles-container" id="tilesContainer1">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <div class="vs-badge-container">
+            <div class="vs-circle">VS</div>
+          </div>
+
+          <!-- Person 2 Tiles -->
+          <div class="name-tile-row" id="row2">
+            <div class="row-header">
+              <span class="row-avatar" id="stageAvatar2">👸</span>
+              <span class="row-name" id="stageName2">Juliet</span>
+              <span class="row-badge" id="stageRemCount2">0 remaining</span>
+            </div>
+            <div class="tiles-container" id="tilesContainer2">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Matching Pairs Showcase -->
+        <div class="matched-pairs-drawer hidden" id="matchedPairsDrawer">
+          <span class="drawer-title">Common Letters Crossed:</span>
+          <div class="matched-chips" id="matchedChips"></div>
+          <div class="count-formula-badge" id="countFormulaBadge">
+            Remaining count <strong>N = <span id="formulaNValue">0</span></strong>
+          </div>
+        </div>
+
+        <!-- FLAMES Elimination Arena (Phase 4) -->
+        <div class="flames-board-wrapper hidden" id="flamesBoardWrapper">
+          <div class="flames-board-header">
+            <h3>Elimination Round <span id="currentRoundNum">1</span> / 5</h3>
+            <p>Counting <strong><span id="flamesCountN">0</span></strong> letters around the circle...</p>
+          </div>
+
+          <div class="flames-letters-grid" id="flamesLettersGrid">
+            <div class="flame-letter-card" data-code="F" id="card-F">
+              <span class="card-letter">F</span>
+              <span class="card-word">Friends</span>
+              <span class="card-sub-emoji">🤝</span>
+              <div class="strike-line"></div>
+              <div class="elim-burn-fx">💥</div>
+            </div>
+            <div class="flame-letter-card" data-code="L" id="card-L">
+              <span class="card-letter">L</span>
+              <span class="card-word">Lovers</span>
+              <span class="card-sub-emoji">💖</span>
+              <div class="strike-line"></div>
+              <div class="elim-burn-fx">💥</div>
+            </div>
+            <div class="flame-letter-card" data-code="A" id="card-A">
+              <span class="card-letter">A</span>
+              <span class="card-word">Affectionate</span>
+              <span class="card-sub-emoji">🥰</span>
+              <div class="strike-line"></div>
+              <div class="elim-burn-fx">💥</div>
+            </div>
+            <div class="flame-letter-card" data-code="M" id="card-M">
+              <span class="card-letter">M</span>
+              <span class="card-word">Marriage</span>
+              <span class="card-sub-emoji">💍</span>
+              <div class="strike-line"></div>
+              <div class="elim-burn-fx">💥</div>
+            </div>
+            <div class="flame-letter-card" data-code="E" id="card-E">
+              <span class="card-letter">E</span>
+              <span class="card-word">Enemies</span>
+              <span class="card-sub-emoji">⚡</span>
+              <div class="strike-line"></div>
+              <div class="elim-burn-fx">💥</div>
+            </div>
+            <div class="flame-letter-card" data-code="S" id="card-S">
+              <span class="card-letter">S</span>
+              <span class="card-word">Siblings</span>
+              <span class="card-sub-emoji">🤪</span>
+              <div class="strike-line"></div>
+              <div class="elim-burn-fx">💥</div>
+            </div>
+          </div>
+
+          <!-- Pointer Indicator -->
+          <div class="counting-pointer-wrapper">
+            <div class="counting-pointer" id="countingPointer">
+              <span class="pointer-hand">👇</span>
+              <span class="pointer-tag" id="pointerCountTag">1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage Playback Controls -->
+        <div class="stage-controls-bar">
+          <button type="button" class="control-btn sec-btn" id="stagePausePlayBtn">
+            <span id="playPauseIcon">⏸️</span>
+            <span id="playPauseText">Pause</span>
+          </button>
+          <button type="button" class="control-btn sec-btn" id="stageNextStepBtn">
+            <span>⏭️</span>
+            <span>Next Step</span>
+          </button>
+          <div class="speed-control">
+            <span>Speed:</span>
+            <button type="button" class="speed-btn active" data-speed="1">1x</button>
+            <button type="button" class="speed-btn" data-speed="2">2x</button>
+            <button type="button" class="speed-btn" data-speed="0.5">0.5x</button>
+          </div>
+          <button type="button" class="control-btn skip-btn" id="stageSkipBtn">
+            <span>⏩ Skip to Result</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- RESULT SHOWCASE GRAND FINALE SECTION -->
+      <section class="card result-card glass-panel hidden" id="resultSection">
+        <div class="result-glow-aurora" id="resultAurora"></div>
+
+        <div class="result-header text-center">
+          <div class="outcome-pill" id="resultPill">
+            <span id="resultPillEmoji">✨</span>
+            <span id="resultPillText">Destiny Unlocked!</span>
+          </div>
+
+          <div class="couple-names-headline">
+            <span id="resName1Display">Romeo</span>
+            <span class="names-plus">+</span>
+            <span id="resName2Display">Juliet</span>
+          </div>
+
+          <!-- Big Letter Badge -->
+          <div class="big-outcome-box" id="bigOutcomeBox">
+            <div class="outcome-letter-seal" id="outcomeLetterSeal">L</div>
+            <div class="outcome-details">
+              <h1 class="outcome-title" id="outcomeTitle">LOVERS</h1>
+              <p class="outcome-subtitle" id="outcomeSubtitle">"Written in the Stars - Pure Magic"</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outcome Story & Roast -->
+        <div class="outcome-story-card">
+          <div class="story-icon">📜</div>
+          <div class="story-body">
+            <h4>The Couple's Horoscope</h4>
+            <p id="outcomeStoryText">
+              The cosmic algorithm has spoken! You two possess electric chemistry that could light up a whole city. 
+              Keep the romance sizzling and get ready for unforgettable adventures together!
+            </p>
+          </div>
+        </div>
+
+        <!-- Couple Compatibility Breakdown Radar & Stats -->
+        <div class="compatibility-grid">
+          <div class="compat-stat-box">
+            <div class="stat-top">
+              <span class="stat-icon">💖</span>
+              <span class="stat-name">Romance &amp; Chemistry</span>
+              <span class="stat-val" id="statRomance">98%</span>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill romance-fill" id="barRomance" style="width: 98%;"></div>
+            </div>
+          </div>
+
+          <div class="compat-stat-box">
+            <div class="stat-top">
+              <span class="stat-icon">😂</span>
+              <span class="stat-name">Banter &amp; Laughs</span>
+              <span class="stat-val" id="statBanter">92%</span>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill banter-fill" id="barBanter" style="width: 92%;"></div>
+            </div>
+          </div>
+
+          <div class="compat-stat-box">
+            <div class="stat-top">
+              <span class="stat-icon">🧠</span>
+              <span class="stat-name">Telepathy &amp; Vibes</span>
+              <span class="stat-val" id="statVibes">88%</span>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill vibes-fill" id="barVibes" style="width: 88%;"></div>
+            </div>
+          </div>
+
+          <div class="compat-stat-box">
+            <div class="stat-top">
+              <span class="stat-icon">⚡</span>
+              <span class="stat-name">Spicy Drama Index</span>
+              <span class="stat-val" id="statDrama">25%</span>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill drama-fill" id="barDrama" style="width: 25%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Couple Truth or Dare Prompt -->
+        <div class="couple-prompt-card">
+          <div class="prompt-badge">🎲 Couple Challenge of Destiny</div>
+          <p class="prompt-text" id="couplePromptText">
+            "Stare into each other's eyes for 30 seconds straight without breaking a smile or looking away!"
+          </p>
+          <button type="button" class="pill-btn roll-prompt-btn" id="newPromptBtn">
+            <span>🎲 New Question / Dare</span>
+          </button>
+        </div>
+
+        <!-- Shareable Result Card Preview & Export Actions -->
+        <div class="share-actions-group">
+          <button type="button" class="action-btn copy-card-btn" id="copyResultBtn">
+            <span>📋 Copy Result Text</span>
+          </button>
+          <button type="button" class="action-btn share-social-btn" id="shareStoryBtn">
+            <span>🖼️ Download Couple Card</span>
+          </button>
+          <button type="button" class="action-btn reset-btn" id="testAnotherBtn">
+            <span>🔄 Test Another Couple</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- COUPLE FUN WHEEL MINI-GAME SECTION -->
+      <section class="card glass-panel wheel-section">
+        <div class="section-title-row">
+          <div>
+            <h3>🎡 Flame Fate Spinner</h3>
+            <p class="section-desc">Spin the wheel to decide your next spontaneous couple activity or date night!</p>
+          </div>
+        </div>
+        <div class="wheel-game-container">
+          <div class="wheel-canvas-wrapper">
+            <div class="wheel-pointer-pin">📍</div>
+            <canvas id="fateWheelCanvas" width="320" height="320"></canvas>
+          </div>
+          <div class="wheel-info-side">
+            <button type="button" id="spinWheelBtn" class="primary-btn spin-btn">
+              <span>🎡 Spin the Wheel!</span>
+            </button>
+            <div class="wheel-result-box hidden" id="wheelResultBox">
+              <span class="wheel-result-emoji" id="wheelResultEmoji">🍕</span>
+              <h4 id="wheelResultTitle">Midnight Pizza Date</h4>
+              <p id="wheelResultDesc">Order your favorite extra cheese pizza and watch a comfort movie together.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HISTORY / PREVIOUS RESULTS SECTION -->
+      <section class="card glass-panel history-section" id="historySection">
+        <div class="section-title-row">
+          <div>
+            <h3>📖 Relationship Journal</h3>
+            <p class="section-desc">History of tested couples and their calculated destiny.</p>
+          </div>
+          <button type="button" class="pill-btn clear-history-btn" id="clearHistoryBtn" title="Clear History">
+            <span>🗑️ Clear History</span>
+          </button>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="empty-history" id="emptyHistoryMsg">
+            <span>💌 No couples tested yet. Enter your names above to make history!</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- HOW TO PLAY / RULES MODAL TRIGGER / COLLAPSIBLE -->
+      <section class="card glass-panel rules-section">
+        <details class="rules-details">
+          <summary class="rules-summary">
+            <span>📖 How Does FLAMES Actually Work? (The Classic Rules)</span>
+            <span class="summary-arrow">▾</span>
+          </summary>
+          <div class="rules-content">
+            <div class="rules-grid">
+              <div class="rule-box">
+                <div class="rule-num">1</div>
+                <h4>Write Names</h4>
+                <p>Take the first name of both partners (ignoring spaces and special characters).</p>
+              </div>
+              <div class="rule-box">
+                <div class="rule-num">2</div>
+                <h4>Cross Common Letters</h4>
+                <p>For every letter that appears in both names, strike off matching pairs.</p>
+              </div>
+              <div class="rule-box">
+                <div class="rule-num">3</div>
+                <h4>Count Leftovers (N)</h4>
+                <p>Count the total number of uncrossed letters remaining across both names.</p>
+              </div>
+              <div class="rule-box">
+                <div class="rule-num">4</div>
+                <h4>FLAMES Elimination</h4>
+                <p>Count up to N in cyclic order on <strong>F-L-A-M-E-S</strong>. Eliminate the N-th letter and start the next count from the next active letter until one remains!</p>
+              </div>
+            </div>
+
+            <div class="acronym-reference-box">
+              <span class="acronym-title">FLAMES Meaning:</span>
+              <div class="acronym-tags">
+                <span class="tag f-tag"><strong>F</strong> – Friends</span>
+                <span class="tag l-tag"><strong>L</strong> – Lovers</span>
+                <span class="tag a-tag"><strong>A</strong> – Affectionate</span>
+                <span class="tag m-tag"><strong>M</strong> – Marriage</span>
+                <span class="tag e-tag"><strong>E</strong> – Enemies</span>
+                <span class="tag s-tag"><strong>S</strong> – Siblings</span>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Made with ❤️ and ✨ for couples &amp; hopeless romantics everywhere. Classic 90s nostalgia reimagined.</p>
+    </footer>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden">
+    <span id="toastIcon">✨</span>
+    <span id="toastMessage">Copied to clipboard!</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>
