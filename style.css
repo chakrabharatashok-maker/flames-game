@@ -11,7 +11,7 @@
   /* Default Theme: Cupid's Glow (Romantic Rose & Gold) */
   --bg-gradient: radial-gradient(circle at 15% 15%, #ffe6eb 0%, #fff0f5 40%, #ffd1dc 100%);
   --bg-color: #fff0f5;
-  --panel-bg: rgba(255, 255, 255, 0.82);
+  --panel-bg: rgba(255, 255, 255, 0.85);
   --panel-border: rgba(255, 182, 193, 0.45);
   --panel-shadow: 0 16px 40px rgba(233, 30, 99, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
   
@@ -80,7 +80,7 @@
 [data-theme="midnight"] {
   --bg-gradient: radial-gradient(circle at 50% 20%, #1a103c 0%, #0c071e 60%, #05020d 100%);
   --bg-color: #0c071e;
-  --panel-bg: rgba(25, 18, 55, 0.85);
+  --panel-bg: rgba(25, 18, 55, 0.88);
   --panel-border: rgba(157, 107, 255, 0.3);
   --panel-shadow: 0 16px 45px rgba(126, 34, 206, 0.25);
 
@@ -108,7 +108,7 @@
 [data-theme="candypop"] {
   --bg-gradient: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
   --bg-color: #fbc2eb;
-  --panel-bg: rgba(255, 255, 255, 0.9);
+  --panel-bg: rgba(255, 255, 255, 0.92);
   --panel-border: #f8bbd0;
   --panel-shadow: 0 16px 35px rgba(244, 114, 182, 0.2);
 
@@ -149,6 +149,7 @@ body {
   position: relative;
   overflow-x: hidden;
   transition: background 0.5s ease, color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #particleCanvas {
@@ -164,12 +165,12 @@ body {
 .app-wrapper {
   max-width: 900px;
   margin: 0 auto;
-  padding: 24px 16px 60px;
+  padding: 20px 16px 60px;
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 /* --- Header & Navigation --- */
@@ -178,7 +179,7 @@ body {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
   padding: 12px 18px;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
@@ -239,6 +240,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 /* Pill Buttons */
@@ -263,6 +265,115 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px var(--primary-glow);
   border-color: var(--primary);
+}
+
+/* User Auth Container & Profile Dropdown */
+.user-auth-container {
+  position: relative;
+}
+
+.auth-btn {
+  background: var(--primary-light);
+  border-color: var(--panel-border);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.auth-btn.logged-in {
+  background: var(--tile-bg);
+  border-color: var(--primary);
+  color: var(--text-main);
+}
+
+.user-profile-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(18px);
+  box-shadow: var(--panel-shadow);
+  z-index: 100;
+  min-width: 220px;
+  animation: fadeIn 0.25s ease;
+}
+
+.user-info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+}
+
+.user-avatar-emoji {
+  font-size: 1.6rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-text-details {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.user-text-details strong {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-text-details small {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-divider {
+  height: 1px;
+  background: var(--panel-border);
+  margin: 4px 0;
+}
+
+.menu-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  color: var(--text-main);
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+
+.menu-action-btn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.logout-action:hover {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 /* Theme Picker Dropdown */
@@ -1663,6 +1774,208 @@ body {
 }
 
 /* =========================================================
+   AUTHENTICATION MODAL DIALOG
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+  animation: fadeIn 0.25s ease;
+}
+
+.auth-modal-card {
+  position: relative;
+  max-width: 440px;
+  width: 100%;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--card-radius);
+  padding: 32px 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--panel-border);
+  background: var(--tile-bg);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  transform: rotate(90deg);
+}
+
+.auth-icon-badge {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+  animation: heartThrob 1.4s infinite ease-in-out;
+}
+
+.auth-header h3 {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--primary);
+  line-height: 1.2;
+}
+
+.auth-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.auth-methods-group {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Google Sign-In Button */
+.google-sign-in-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 18px;
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: var(--btn-radius);
+  color: #3c4043;
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all var(--transition-fast);
+}
+
+.google-sign-in-btn:hover {
+  background: #f8f9fa;
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.25);
+  border-color: #4285F4;
+  transform: translateY(-1px);
+}
+
+.auth-separator {
+  position: relative;
+  text-align: center;
+  margin: 4px 0;
+}
+
+.auth-separator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--panel-border);
+}
+
+.auth-separator span {
+  position: relative;
+  background: var(--panel-bg);
+  padding: 0 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* Email Auth Form */
+.email-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.auth-input-group label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.auth-input-group input {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--panel-border);
+  background: var(--tile-bg);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.auth-input-group input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 4px;
+}
+
+.auth-footer-options {
+  text-align: center;
+  margin-top: 4px;
+}
+
+.guest-mode-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-main);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+}
+
+.guest-mode-btn:hover {
+  color: var(--primary);
+}
+
+/* =========================================================
    FOOTER & TOAST
    ========================================================= */
 .app-footer {
@@ -1687,7 +2000,7 @@ body {
   align-items: center;
   gap: 8px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-  z-index: 999;
+  z-index: 9999;
   animation: toastPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 

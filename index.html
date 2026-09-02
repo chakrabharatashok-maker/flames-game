@@ -2,8 +2,19 @@
 <html lang="en" data-theme="cupid">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>FLAMES - The Ultimate Couple's Destiny Game 🔥💖</title>
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#e91e63">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FLAMES">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
@@ -23,7 +34,7 @@
         </div>
         <div class="logo-text">
           <h1>F.L.A.M.E.S</h1>
-          <span class="tagline">Couples Destiny & Relationship Predictor</span>
+          <span class="tagline">Couples Destiny &amp; Relationship Predictor</span>
         </div>
       </div>
 
@@ -60,6 +71,32 @@
             </button>
           </div>
         </div>
+
+        <!-- User Authentication Button / Profile Menu -->
+        <div class="user-auth-container">
+          <button id="authTriggerBtn" class="pill-btn auth-btn" title="Account / Sign In">
+            <span class="auth-icon" id="headerAuthIcon">👤</span>
+            <span class="auth-label" id="headerAuthLabel">Sign In</span>
+          </button>
+
+          <div class="user-profile-menu hidden" id="userProfileMenu">
+            <div class="user-info-row">
+              <span id="menuUserEmoji" class="user-avatar-emoji">👑</span>
+              <div class="user-text-details">
+                <strong id="menuUserName">Signed In User</strong>
+                <small id="menuUserEmail">user@example.com</small>
+              </div>
+            </div>
+            <div class="menu-divider"></div>
+            <button type="button" class="menu-action-btn" id="menuSwitchAccountBtn">
+              <span>🔄</span> Switch Account
+            </button>
+            <button type="button" class="menu-action-btn logout-action" id="menuLogoutBtn">
+              <span>🚪</span> Sign Out
+            </button>
+          </div>
+        </div>
+
       </div>
     </header>
 
@@ -530,6 +567,59 @@
     <footer class="app-footer">
       <p>Made with ❤️ and ✨ for couples &amp; hopeless romantics everywhere. Classic 90s nostalgia reimagined.</p>
     </footer>
+  </div>
+
+  <!-- AUTHENTICATION / LOGIN GATE MODAL -->
+  <div class="modal-overlay hidden" id="authModal">
+    <div class="auth-modal-card glass-panel">
+      <button class="modal-close-btn" id="authModalCloseBtn" aria-label="Close Modal">✕</button>
+      
+      <div class="auth-header text-center">
+        <div class="auth-icon-badge">💖</div>
+        <h3>Unlock Your Couple Destiny</h3>
+        <p class="auth-subtitle">Sign in to reveal your full compatibility horoscope, save your matches &amp; share destiny cards!</p>
+      </div>
+
+      <div class="auth-methods-group">
+        <!-- Google Sign-In Button -->
+        <button type="button" class="google-sign-in-btn" id="googleSignInBtn">
+          <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        <div class="auth-separator">
+          <span>or sign in with email</span>
+        </div>
+
+        <!-- Email Form -->
+        <form id="emailAuthForm" class="email-auth-form" onsubmit="return false;">
+          <div class="auth-input-group">
+            <label for="authUserNameInput">Your Name</label>
+            <input type="text" id="authUserNameInput" placeholder="e.g. Alex, Sam" maxlength="30" required>
+          </div>
+
+          <div class="auth-input-group">
+            <label for="authUserEmailInput">Email / Gmail Address</label>
+            <input type="email" id="authUserEmailInput" placeholder="e.g. alex@gmail.com" required>
+          </div>
+
+          <button type="submit" id="emailSignInBtn" class="primary-btn auth-submit-btn">
+            <span>✨ Sign In &amp; Continue</span>
+          </button>
+        </form>
+
+        <div class="auth-footer-options">
+          <button type="button" class="guest-mode-btn" id="guestContinueBtn">
+            <span>⚡ Continue as Guest for this test</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Toast Notification -->

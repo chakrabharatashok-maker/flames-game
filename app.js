@@ -9,10 +9,21 @@
  * - Fate Spinner couple date wheel
  * - Canvas PNG Couple Polaroid Card generator & export
  * - LocalStorage history journal & theme manager
+ * - Authentication & Login Gate (Google & Email sign-in, Guest mode)
+ * - Service Worker for PWA & Play Store readiness
  */
 
 (function () {
   'use strict';
+
+  // --- SERVICE WORKER REGISTRATION ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => {
+        console.warn('Service Worker registration skipped:', err);
+      });
+    });
+  }
 
   // --- AUDIO SYNTHESIZER (Web Audio API) ---
   class SoundEngine {
@@ -64,9 +75,8 @@
       if (!this.enabled) return;
       this.init();
       if (!this.ctx) return;
-      // Double chime
-      this.playTone(523.25, 'triangle', 0.15, 0.1); // C5
-      setTimeout(() => this.playTone(659.25, 'triangle', 0.2, 0.12), 80); // E5
+      this.playTone(523.25, 'triangle', 0.15, 0.1);
+      setTimeout(() => this.playTone(659.25, 'triangle', 0.2, 0.12), 80);
     }
 
     playTick() {
@@ -97,7 +107,7 @@
 
     playVictory() {
       if (!this.enabled) return;
-      const notes = [440, 554.37, 659.25, 880]; // A Major arpeggio
+      const notes = [440, 554.37, 659.25, 880];
       notes.forEach((freq, idx) => {
         setTimeout(() => this.playTone(freq, 'triangle', 0.4, 0.15), idx * 110);
       });
@@ -108,7 +118,7 @@
     }
 
     playWheelWin() {
-      this.playTone(784, 'sine', 0.3, 0.15); // G5
+      this.playTone(784, 'sine', 0.3, 0.15);
     }
   }
 
@@ -346,8 +356,7 @@
     const chars1 = clean1.split('');
     const chars2 = clean2.split('');
 
-    // Track matching pairs by original indices
-    const matchedPairs = []; // { char, idx1, idx2 }
+    const matchedPairs = [];
     const used1 = new Set();
     const used2 = new Set();
 
@@ -368,9 +377,8 @@
     const uncrossed2 = chars2.filter((_, idx) => !used2.has(idx));
     const leftoversCount = uncrossed1.length + uncrossed2.length;
 
-    // FLAMES Josephus Simulation
     const initialFlames = ['F', 'L', 'A', 'M', 'E', 'S'];
-    const rounds = []; // record each elimination step
+    const rounds = [];
 
     if (leftoversCount === 0) {
       return {
@@ -399,7 +407,6 @@
       const elimRelativeIdx = (startIdx + (leftoversCount - 1)) % activeList.length;
       const eliminatedCode = activeList[elimRelativeIdx];
 
-      // Record counting path for animation
       const countPath = [];
       for (let step = 0; step < leftoversCount; step++) {
         const pIdx = (startIdx + step) % activeList.length;
@@ -528,6 +535,25 @@
   const currentThemeIcon = document.getElementById('currentThemeIcon');
   const currentThemeLabel = document.getElementById('currentThemeLabel');
 
+  // Auth & Profile Elements
+  const authTriggerBtn = document.getElementById('authTriggerBtn');
+  const headerAuthIcon = document.getElementById('headerAuthIcon');
+  const headerAuthLabel = document.getElementById('headerAuthLabel');
+  const userProfileMenu = document.getElementById('userProfileMenu');
+  const menuUserName = document.getElementById('menuUserName');
+  const menuUserEmail = document.getElementById('menuUserEmail');
+  const menuUserEmoji = document.getElementById('menuUserEmoji');
+  const menuSwitchAccountBtn = document.getElementById('menuSwitchAccountBtn');
+  const menuLogoutBtn = document.getElementById('menuLogoutBtn');
+
+  const authModal = document.getElementById('authModal');
+  const authModalCloseBtn = document.getElementById('authModalCloseBtn');
+  const googleSignInBtn = document.getElementById('googleSignInBtn');
+  const emailAuthForm = document.getElementById('emailAuthForm');
+  const authUserNameInput = document.getElementById('authUserNameInput');
+  const authUserEmailInput = document.getElementById('authUserEmailInput');
+  const guestContinueBtn = document.getElementById('guestContinueBtn');
+
   // History & Toast
   const historyList = document.getElementById('historyList');
   const clearHistoryBtn = document.getElementById('clearHistoryBtn');
@@ -545,12 +571,12 @@
   // --- STATE VARIABLES ---
   let currentModel = null;
   let currentPromptIdx = 0;
-  let animSpeedMultiplier = 1; // 1x
+  let animSpeedMultiplier = 1;
   let isPaused = false;
-  let currentStepIndex = 0;
   let activeAnimationTimer = null;
   let isWheelSpinning = false;
   let wheelAngle = 0;
+  let pendingCalculation = null;
 
   // --- TOAST NOTIFIER ---
   function showToast(msg, icon = '✨') {
@@ -561,6 +587,174 @@
       toast.classList.add('hidden');
     }, 2800);
   }
+
+  // --- AUTHENTICATION MANAGER ---
+  class AuthManager {
+    constructor() {
+      this.currentUser = this.loadUser();
+      this.updateUI();
+    }
+
+    loadUser() {
+      try {
+        const stored = localStorage.getItem('flames_user');
+        return stored ? JSON.parse(stored) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    saveUser(user) {
+      this.currentUser = user;
+      localStorage.setItem('flames_user', JSON.stringify(user));
+      this.updateUI();
+      if (user && user.name && (!name1Input.value || name1Input.value === 'Romeo' || name1Input.value === 'Jack')) {
+        name1Input.value = user.name;
+      }
+    }
+
+    logout() {
+      this.currentUser = null;
+      localStorage.removeItem('flames_user');
+      this.updateUI();
+      showToast('Signed out successfully', '👋');
+    }
+
+    isLoggedIn() {
+      return !!this.currentUser;
+    }
+
+    updateUI() {
+      if (this.currentUser) {
+        authTriggerBtn.classList.add('logged-in');
+        headerAuthIcon.textContent = this.currentUser.avatar || '💖';
+        headerAuthLabel.textContent = this.currentUser.name ? this.currentUser.name.split(' ')[0] : 'My Account';
+
+        menuUserName.textContent = this.currentUser.name || 'Lovely Couple';
+        menuUserEmail.textContent = this.currentUser.email || 'Signed in via Google/Email';
+        menuUserEmoji.textContent = this.currentUser.avatar || '💖';
+      } else {
+        authTriggerBtn.classList.remove('logged-in');
+        headerAuthIcon.textContent = '👤';
+        headerAuthLabel.textContent = 'Sign In';
+      }
+    }
+
+    openModal(onSuccessCallback = null) {
+      pendingCalculation = onSuccessCallback;
+      authModal.classList.remove('hidden');
+      audio.playClick();
+    }
+
+    closeModal() {
+      authModal.classList.add('hidden');
+    }
+
+    signInWithGoogle() {
+      // Smooth Google Sign-in Simulation with realistic profile data
+      const sampleNames = ['Alex Rivera', 'Jordan Lee', 'Taylor Swift', 'Morgan Parker', 'Sam Wilson'];
+      const chosenName = name1Input.value.trim() || sampleNames[Math.floor(Math.random() * sampleNames.length)];
+      const handle = chosenName.toLowerCase().replace(/[^a-z]/g, '');
+      const user = {
+        name: chosenName,
+        email: `${handle || 'couple'}@gmail.com`,
+        avatar: '👑',
+        provider: 'google'
+      };
+
+      this.saveUser(user);
+      this.closeModal();
+      showToast(`Welcome, ${user.name}! 🌟`, '💖');
+      audio.playVictory();
+
+      if (pendingCalculation) {
+        const action = pendingCalculation;
+        pendingCalculation = null;
+        action();
+      }
+    }
+
+    signInWithEmail(name, email) {
+      const user = {
+        name: name.trim(),
+        email: email.trim(),
+        avatar: '👑',
+        provider: 'email'
+      };
+
+      this.saveUser(user);
+      this.closeModal();
+      showToast(`Welcome, ${user.name}! 🌟`, '💖');
+      audio.playVictory();
+
+      if (pendingCalculation) {
+        const action = pendingCalculation;
+        pendingCalculation = null;
+        action();
+      }
+    }
+  }
+
+  const auth = new AuthManager();
+
+  // Auth Button Header Trigger
+  authTriggerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (auth.isLoggedIn()) {
+      userProfileMenu.classList.toggle('hidden');
+    } else {
+      auth.openModal();
+    }
+  });
+
+  menuSwitchAccountBtn.addEventListener('click', () => {
+    userProfileMenu.classList.add('hidden');
+    auth.openModal();
+  });
+
+  menuLogoutBtn.addEventListener('click', () => {
+    userProfileMenu.classList.add('hidden');
+    auth.logout();
+  });
+
+  authModalCloseBtn.addEventListener('click', () => {
+    auth.closeModal();
+  });
+
+  googleSignInBtn.addEventListener('click', () => {
+    auth.signInWithGoogle();
+  });
+
+  emailAuthForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = authUserNameInput.value.trim();
+    const email = authUserEmailInput.value.trim();
+    if (!name || !email) {
+      showToast('Please provide both name and email', '⚠️');
+      return;
+    }
+    auth.signInWithEmail(name, email);
+  });
+
+  guestContinueBtn.addEventListener('click', () => {
+    auth.closeModal();
+    showToast('Continuing as Guest', '⚡');
+    if (pendingCalculation) {
+      const action = pendingCalculation;
+      pendingCalculation = null;
+      action();
+    }
+  });
+
+  // Close menus on outer click
+  document.addEventListener('click', (e) => {
+    if (!authTriggerBtn.contains(e.target) && !userProfileMenu.contains(e.target)) {
+      userProfileMenu.classList.add('hidden');
+    }
+    if (e.target === authModal) {
+      auth.closeModal();
+    }
+  });
 
   // --- THEME MANAGEMENT ---
   const THEMES = {
@@ -675,7 +869,6 @@
     });
   });
 
-  // Helper delay with pause support and speed scaling
   function stepDelay(ms) {
     const adjustedMs = ms / animSpeedMultiplier;
     return new Promise(resolve => {
@@ -716,14 +909,13 @@
     matchedPairsDrawer.classList.add('hidden');
     flamesBoardWrapper.classList.add('hidden');
 
-    // Scroll smoothly to stage
     stageSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     // Step 1: Render Name Tiles
     updateStepper(1);
     narrationIcon.textContent = '✍️';
     narrationTitle.textContent = 'Step 1: Writing Down Both Names';
-    narrationDesc.textContent = `Comparing "${model.rawName1}" and "${model.rawName2}". Let's arrange their letter tiles.`;
+    narrationDesc.textContent = `Comparing "${model.rawName1}" and "${model.rawName2}". Arranging letter tiles.`;
 
     stageAvatar1.textContent = avatar1Icon.textContent;
     stageAvatar2.textContent = avatar2Icon.textContent;
@@ -782,7 +974,6 @@
         t1.classList.add('matched');
         t2.classList.add('matched');
 
-        // Add chip to matched drawer
         const chip = document.createElement('span');
         chip.className = 'matched-chip';
         chip.innerHTML = `<span>✂️</span> <strong>${pair.char.toUpperCase()}</strong>`;
@@ -819,7 +1010,6 @@
 
     await stepDelay(1100);
 
-    // If leftover count is 0 -> Special Twin Flames
     if (model.leftoversCount === 0) {
       showResultCard(model);
       return;
@@ -829,12 +1019,11 @@
     updateStepper(4);
     narrationIcon.textContent = '🔥';
     narrationTitle.textContent = 'Step 4: FLAMES Elimination Arena';
-    narrationDesc.textContent = `Counting ${model.leftoversCount} letters circularly around F-L-A-M-E-S until only one destiny remains!`;
+    narrationDesc.textContent = `Counting ${model.leftoversCount} letters circularly around F-L-A-M-E-S until destiny remains!`;
 
     flamesBoardWrapper.classList.remove('hidden');
     flamesCountN.textContent = model.leftoversCount;
 
-    // Reset FLAMES card elements
     ['F', 'L', 'A', 'M', 'E', 'S'].forEach(code => {
       const card = document.getElementById(`card-${code}`);
       card.className = 'flame-letter-card';
@@ -842,17 +1031,14 @@
 
     await stepDelay(700);
 
-    // Loop through each elimination round
     for (let r = 0; r < model.rounds.length; r++) {
       const round = model.rounds[r];
       currentRoundNum.textContent = round.roundNum;
 
-      // Animate counting path
       for (let s = 0; s < round.countPath.length; s++) {
         const activeCode = round.countPath[s];
         const card = document.getElementById(`card-${activeCode}`);
 
-        // Position pointer above active card
         if (card) {
           card.classList.add('highlight-pointer');
           pointerCountTag.textContent = `${s + 1} / ${model.leftoversCount}`;
@@ -867,7 +1053,6 @@
         }
       }
 
-      // Eliminate the landing card
       const elimCard = document.getElementById(`card-${round.eliminatedCode}`);
       if (elimCard) {
         elimCard.classList.add('burning');
@@ -880,7 +1065,7 @@
       await stepDelay(400);
     }
 
-    // Step 5: Reveal Destiny!
+    // Step 5: Reveal Destiny
     updateStepper(5);
     const winningCard = document.getElementById(`card-${model.winnerCode}`);
     if (winningCard) {
@@ -897,8 +1082,6 @@
     launchConfetti(80);
 
     await stepDelay(1400);
-
-    // Reveal Result Card
     showResultCard(model);
   }
 
@@ -934,7 +1117,6 @@
     resultPillEmoji.textContent = prof.emoji;
     resultPill.querySelector('#resultPillText').textContent = prof.title;
 
-    // Animate stats
     statRomance.textContent = `${prof.romance}%`;
     barRomance.style.width = `${prof.romance}%`;
 
@@ -947,15 +1129,12 @@
     statDrama.textContent = `${prof.drama}%`;
     barDrama.style.width = `${prof.drama}%`;
 
-    // Prompt
     currentPromptIdx = 0;
     couplePromptText.textContent = `"${prof.prompts[0]}"`;
 
-    // Celebration
     audio.playVictory();
     launchConfetti(120);
 
-    // Save to history
     saveToHistory(model);
   }
 
@@ -1028,7 +1207,6 @@
     offCanvas.height = 800;
     const octx = offCanvas.getContext('2d');
 
-    // Background gradient
     const grad = octx.createLinearGradient(0, 0, 600, 800);
     grad.addColorStop(0, '#ffe6eb');
     grad.addColorStop(0.5, '#fff0f5');
@@ -1036,7 +1214,6 @@
     octx.fillStyle = grad;
     octx.fillRect(0, 0, 600, 800);
 
-    // Decorative Card Border / Shadow
     octx.fillStyle = '#ffffff';
     octx.shadowColor = 'rgba(233, 30, 99, 0.2)';
     octx.shadowBlur = 30;
@@ -1044,18 +1221,15 @@
     octx.fill();
     octx.shadowBlur = 0;
 
-    // Header Tag
     octx.fillStyle = '#e91e63';
     octx.font = 'bold 20px sans-serif';
     octx.textAlign = 'center';
     octx.fillText('✨ F.L.A.M.E.S DESTINY CARD ✨', 300, 85);
 
-    // Couple Names
     octx.fillStyle = '#2d1822';
     octx.font = 'bold 36px sans-serif';
     octx.fillText(`${model.rawName1} ❤️ ${model.rawName2}`, 300, 145);
 
-    // Outcome Letter Badge
     const badgeGrad = octx.createLinearGradient(230, 190, 370, 330);
     badgeGrad.addColorStop(0, '#e91e63');
     badgeGrad.addColorStop(1, '#9c27b0');
@@ -1067,7 +1241,6 @@
     octx.font = 'bold 70px sans-serif';
     octx.fillText(model.profile.code, 300, 280);
 
-    // Title & Subtitle
     octx.fillStyle = '#e91e63';
     octx.font = 'bold 32px sans-serif';
     octx.fillText(model.profile.label.toUpperCase(), 300, 370);
@@ -1076,7 +1249,6 @@
     octx.font = 'italic 20px Georgia, serif';
     octx.fillText(model.profile.subtitle, 300, 405);
 
-    // Story summary box
     octx.fillStyle = '#fce4ec';
     octx.roundRect(60, 440, 480, 110, 16);
     octx.fill();
@@ -1085,18 +1257,15 @@
     octx.font = '16px sans-serif';
     wrapText(octx, model.profile.story, 300, 475, 440, 24);
 
-    // Compatibility stats
     octx.fillStyle = '#2d1822';
     octx.font = 'bold 18px sans-serif';
     octx.fillText(`Romance: ${model.profile.romance}%   |   Banter: ${model.profile.banter}%   |   Vibes: ${model.profile.vibes}%`, 300, 595);
 
-    // Date
     octx.fillStyle = '#a08595';
     octx.font = '14px sans-serif';
     const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
     octx.fillText(`Tested on ${dateStr} • FLAMES Couple Game`, 300, 730);
 
-    // Trigger Download
     const dataUrl = offCanvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.download = `FLAMES_${model.rawName1}_and_${model.rawName2}.png`;
@@ -1125,7 +1294,7 @@
     ctx.fillText(line.trim(), x, currY);
   }
 
-  // --- FORM SUBMIT HANDLER ---
+  // --- FORM SUBMIT HANDLER WITH AUTH GATE ---
   flamesForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const n1 = name1Input.value.trim();
@@ -1140,10 +1309,19 @@
       const model = computeFlamesModel(n1, n2);
       const mode = document.querySelector('input[name="playMode"]:checked').value;
 
-      if (mode === 'animated') {
-        runStepByStepAnimation(model);
+      const triggerGame = () => {
+        if (mode === 'animated') {
+          runStepByStepAnimation(model);
+        } else {
+          runInstantCalculation(model);
+        }
+      };
+
+      // If user is not logged in, trigger the login gate
+      if (!auth.isLoggedIn()) {
+        auth.openModal(triggerGame);
       } else {
-        runInstantCalculation(model);
+        triggerGame();
       }
     } catch (err) {
       showToast(err.message, '⚠️');
@@ -1172,7 +1350,6 @@
       date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
 
-    // Avoid exact duplicate at top
     if (history.length === 0 || history[0].name1 !== item.name1 || history[0].name2 !== item.name2) {
       history.unshift(item);
       if (history.length > 20) history.pop();
@@ -1260,7 +1437,6 @@
       const startAngle = angle + i * sliceAngle;
       const endAngle = startAngle + sliceAngle;
 
-      // Slice sector
       wctx.beginPath();
       wctx.moveTo(centerX, centerY);
       wctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -1271,7 +1447,6 @@
       wctx.strokeStyle = '#ffffff';
       wctx.stroke();
 
-      // Text & Emoji
       wctx.save();
       wctx.translate(centerX, centerY);
       wctx.rotate(startAngle + sliceAngle / 2);
@@ -1284,7 +1459,6 @@
       wctx.restore();
     });
 
-    // Center Hub
     wctx.beginPath();
     wctx.arc(centerX, centerY, 24, 0, 2 * Math.PI);
     wctx.fillStyle = '#ffffff';
@@ -1320,12 +1494,10 @@
     function animateWheel(now) {
       const elapsed = now - startTime;
       const progress = Math.min(1, elapsed / duration);
-      // Ease out cubic
       const easeOut = 1 - Math.pow(1 - progress, 3);
       wheelAngle = startAngle + (targetAngle - startAngle) * easeOut;
       drawWheel(wheelAngle);
 
-      // Sound ticks on sector passing
       const currentSliceIdx = Math.floor(((wheelAngle % (2 * Math.PI)) / (2 * Math.PI)) * WHEEL_SLICES.length);
       if (currentSliceIdx !== lastTickSlice) {
         audio.playWheelTick();
@@ -1337,7 +1509,6 @@
       } else {
         isWheelSpinning = false;
         spinWheelBtn.disabled = false;
-        // Determine winning slice (pin is at top = -PI/2)
         const normalizedAngle = (2 * Math.PI - (wheelAngle % (2 * Math.PI)) - Math.PI / 2 + 4 * Math.PI) % (2 * Math.PI);
         const sliceAngle = (2 * Math.PI) / WHEEL_SLICES.length;
         const winnerIndex = Math.floor(normalizedAngle / sliceAngle) % WHEEL_SLICES.length;
