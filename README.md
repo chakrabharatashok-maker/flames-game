@@ -4,6 +4,9 @@ A modern, animated, and interactive couple's web application based on the nostal
 
 ![FLAMES Preview](https://img.shields.io/badge/FLAMES-Couple%20Oracle-ff4081?style=for-the-badge&logo=heart)
 
+🌐 **Live Demo:** [https://chakrabharatashok-maker.github.io/flames-game/](https://chakrabharatashok-maker.github.io/flames-game/)
+
+
 ---
 
 ## 🌟 Key Features
